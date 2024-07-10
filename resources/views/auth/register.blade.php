@@ -1,7 +1,7 @@
 @extends('layout.main')
 
 @section('content')
-    <section aria-label="Register Form" class="d-flex justify-content-center vh-100 align-items-center">
+    <section aria-label="Register Form" class="d-flex justify-content-center mt-5 align-items-center">
         <form method="post" action="{{route('register')}}" enctype="multipart/form-data" class="card shadow-sm w-50 p-4 mx-auto">
             @csrf
             <h1 class="mb-4 text-center">Register</h1>

@@ -57,4 +57,8 @@ class AuthController extends Controller
         }
             return back()->withErrors(['username' => 'Invalid Username or Password']);
     }
+    public function logout(){
+        Auth::logout();
+        return redirect()->route('loginPage')->with(['success' => 'Logout Successfully']);
+    }
 }

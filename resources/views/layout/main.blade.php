@@ -7,8 +7,12 @@
     <title>Photo Albums</title>
 {{--    link bootstrap css--}}
     <link rel="stylesheet" href="{{asset('storage/bootstrap/css/bootstrap.min.css')}}">
+
+{{--    custom css--}}
+    @yield('styles')
 </head>
 <body>
+    @include('layout.nav')
    <div class="container mt-3">
        @yield('content')
    </div>
@@ -16,5 +20,8 @@
 <script src="{{asset('storage/bootstrap/js/bootstrap.min.js')}}"></script>
 {{--link jquery--}}
 <script src="{{asset('storage/jquery/jquery.min.js')}}"></script>
+
+    {{--    custom js--}}
+    @yield('scripts')
 </body>
 </html>

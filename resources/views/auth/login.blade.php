@@ -1,7 +1,7 @@
 @extends('layout.main')
 
 @section('content')
-    <section aria-label="Login Form" class="d-flex justify-content-center vh-100 align-items-center flex-column">
+    <section aria-label="Login Form" class="d-flex justify-content-center align-items-center flex-column mt-5">
         @if(Session::has('success'))
             <div class="alert alert-success text-center">
                 {{Session::get('success')}}
