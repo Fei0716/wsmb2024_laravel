@@ -42,7 +42,22 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public $appends = ['likesCount'];
+
     public function albums(){
         return $this->hasMany(Album::class, 'user_id', 'id');
+    }
+    public function images(){
+        return $this->hasManyThrough(Image::class, Album::class, 'user_id' ,'album_id');
+    }
+    public function getLikesCountAttribute(){
+        $images = $this->images;
+        $count = 0;
+
+        foreach($images as $image){
+            $count += $image->likes->count();
+        }
+        return $count;
     }
 }

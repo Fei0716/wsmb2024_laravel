@@ -53,4 +53,11 @@ class ImageController extends Controller
         return response()->json(['message' => 'Images uploaded successfully']);
 
     }
+    public function destroy(Image $image, Request $request){
+        $image->delete();
+        if(Storage::disk('public')->exists($image->path)){
+            Storage::disk('public')->delete($image->path);
+        }
+        return response()->json(['message' => 'Image deleted']);
+    }
 }

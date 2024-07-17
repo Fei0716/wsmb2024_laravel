@@ -1,5 +1,3 @@
-
-
 @extends('layout.main')
 
 @section('styles')
@@ -22,6 +20,26 @@
         }
         #btn-add:hover{
             background-color: #a2a2a2;
+        }
+        #card-images{
+            width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid transparent;
+        }
+        .dragging{
+            animation: dragEffect 1s infinite;
+        }
+        @keyframes dragEffect {
+            from{
+                background-color: #6e6e6e;
+                border: 2px solid transparent;
+            }
+            to{
+                background-color: #a2a2a2;
+                border: 2px solid #2f2f2f;
+            }
         }
     </style>
 @endsection
@@ -50,33 +68,34 @@
             </div>
         </form>
         <div class="cards row" id="card-images">
-            @foreach($album->images as $i)
-                    <article class="col-3">
-                        <div class="card shadow-sm position-relative">
-                            <form action="{{route('images.destroy' , $i)}}" method="post">
-                                @csrf
-                                @method('delete')
-                                <button class="btn-close position-absolute top-0 end-0" type="submit"></button>
-                            </form>
-                            <img src="{{asset('storage/'.$i->path)}}" alt="Thumbnail for album" class="card-img-top card-img">
-                        </div>
-                    </article>
-            @endforeach
-            <input type="file" name="images[]" id="images" accept=".png,.jpeg,.jpg" hidden multiple>
-            <button id="btn-add" class="col-3">+</button>
+{{--            load using ajax--}}
         </div>
     </section>
 
+{{--    modal fullscreen image--}}
+    <div class="modal fade" tabindex="-1" id="modal-fullscreen">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-header border-bottom-0">
+                    <button class="btn-close" aria-label="Clock Modal Dialog" data-bs-dismiss="modal">
+                    </button>
+                </div>
+                <div class="modal-body" id="fullscreen-image">
+{{--                    image here--}}
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
     <script>
         jQuery(document).ready(function($){
             const album_id = @json($album->id);
-            $('#btn-add').on('click',function(){
+            $(document).on('click' , '#btn-add',function(){
                 $('#images').click();
             });
-            $('#images').on('change',function(e){
+            $(document).on('change', '#images',function(e){
                 const files = e.target.files;
                 if(files.length <= 0){
                     alert('No file selected');
@@ -84,11 +103,16 @@
                 }
                 uploadImage(files);
             });
-            function uploadImage(f){
+            function uploadImage(f , type = 'multiple'){
                 const formData = new FormData();
-                for(let file of f){
-                    formData.append('images[]' , file);
+                if(type === 'multiple'){
+                    for(let file of f){
+                        formData.append('images[]' , file);
+                    }
+                }else{
+                    formData.append('images[]' , f);
                 }
+
                 formData.append('_token' , "{{csrf_token()}}");
                 formData.append('album_id' , album_id);
 
@@ -100,7 +124,7 @@
                     contentType: false,
                     processData: false,
                     success: function(result){
-                        console.log(result.message)
+                        getImages();
                     },
                     error: function(err){
                         console.error(err);
@@ -127,22 +151,74 @@
                             $('#card-images').append(`
                                 <article class="col-3">
                                     <div class="card shadow-sm position-relative">
-                                        <form action="${linkForm}" method="post">
-                                            @csrf
-                                            @method('delete')
-                                        <button class="btn-close position-absolute top-0 end-0" type="submit"></button>
-                                    </form>
+                                        <button class="btn-close position-absolute top-0 end-0" data-image-id="${i.id}" id="btn-delete"></button>
                                     <img src="${linkImage}" alt="Thumbnail for album" class="card-img-top card-img">
                                     </div>
                                 </article>
                             `)
                         }
+                        $('#card-images').append('<input type="file" name="images[]" id="images" accept=".png,.jpeg,.jpg" hidden multiple><button id="btn-add" class="col-3">+</button>');
                     },
                     error: function(err){
                         console.error(err);
                     }
                 })
             }
+
+        //     drag and drop
+            $(document).on('dragover' ,function(e){
+                e.preventDefault();
+                $('#card-images').addClass('dragging')
+            })
+            $(document).on('dragleave' ,function(e){
+                $('#card-images').removeClass('dragging')
+            })
+            $(document).on('dragleave drop' , '#card-images' , function(e){
+                e.preventDefault();
+                e.target.classList.remove('dragging')
+            });
+            $('#card-images').on('drop' , function(e){
+                e.preventDefault();
+                e.target.classList.remove('dragging')
+                const files = e.originalEvent.dataTransfer.files[0];
+                if(files.length <= 0){
+                    alert('No file selected');
+                    return;
+                }
+                uploadImage(files , 'single');
+            });
+
+            //for delete image
+            $(document).on('click' , '#btn-delete',function(e){
+                const id = $(this).data('image-id');
+                deleteImage(id);
+            });
+
+            function deleteImage(id){
+                //     ajax
+                const link = "{{route('images.destroy',':id')}}".replace(':id' , id);
+                $.ajax({
+                    url: link,
+                    method: 'delete',
+                    data:{
+                        "_token": "{{csrf_token()}}",
+                    },
+                    success: function(result){
+                        getImages();
+                    },
+                    error: function(err){
+                        console.error(err);
+                    }
+                })
+            }
+            //for fullscreen image
+            $(document).on('click', '.card-img' , function(e){
+                const src = e.target.src;
+                $('#fullscreen-image').html(`
+                    <img src="${src}" alt="Fullscreen Image">
+                `);
+                $('#modal-fullscreen').modal('show');
+            });
         });
     </script>
 @endsection

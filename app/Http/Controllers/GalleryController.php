@@ -14,4 +14,7 @@ class GalleryController extends Controller
 //        $albums =  DB::select('SELECT * FROM albums WHERE status = "0"');
         return view('gallery.index')->with(['albums'=> $albums]);
     }
+    public function show(Album $album){
+        return view('gallery.show')->with(['album' => $album]);
+    }
 }

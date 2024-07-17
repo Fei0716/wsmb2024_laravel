@@ -40,7 +40,7 @@ class AlbumController extends Controller
         $album->user_id = Auth::user()->id;
         $album->save();
 
-        return redirect()->route('albums.show');
+        return redirect()->route('albums.show' ,$album);
     }
     public function show(Album $album){
       return view('albums.show')->with(['album'=> $album]);
